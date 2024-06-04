@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Expense tracker</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <div id="wrapper-information" class="cards-container">
+            <div class="card income">
+                <span class="card-value" id="val-income"></span><br>
+                <span class="card-description">Income</span>
+            </div>
+            <div class="card expense">
+                <span class="card-value" id="val-expenses"></span><br>
+                <span class="card-description">Expense</span>
+            </div>
+            <div class="card balance">
+                <span class="card-value" id="val-balance"></span><br>
+                <span class="card-description">Balance</span>
+            </div>
+        </div>
+        <div class="date-container">
+            <div class="input-container">
+                <label for="start-day">Start day</label>
+                <input type="date" class="select-date" id="start-day"/>
+            </div>
+            <div class="input-container">
+                <label for="end-day">End day</label>
+                <input type="date" class="select-date" id="end-day"/>
+            </div>
+        </div>
+        <div>
+            <button id="add-expense-button">Add</button>
+            <table id="table-show-expenses">
+                <thead>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th></th>
+                    <th></th>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        
+        <dialog id="input-dialog">
+            <form class="container">
+                <label for="container-income-form">Income?</label>
+                <label class="switch" id="container-income-form">
+                    <input type="checkbox" id="income-form">
+                    <span class="slider" id="slider-income-form"></span>
+                </label>
+
+                <label for="category-form">Category:</label>
+                <select id="category-form">
+                   
+                </select>
+
+
+                <label for="description-form">Description:</label>
+                <input type="text" id="description-form"/>
+
+                <label for="amount-form">Enter amount:</label>
+                <input type="text" id="amount-form"/>               
+
+                <button type="button" id="confirm-form-button" class="confirm">Save</button>
+                <button type="button" id="cancel-form-button" class="cancel">Cancel</button>
+            </form>
+        </dialog>
+
+        <script type="module" src="script.js"></script>
+    </body>
+</html>

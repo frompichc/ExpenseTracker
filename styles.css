@@ -1,0 +1,194 @@
+/*---- FORM */
+.container{
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+/* ADD BUTTON */
+#add-expense-button{
+  position: relative;
+  background-color: transparent;
+  cursor: pointer;
+  border-radius: 10px;
+  width: 200px;
+  height: 30px;
+  box-shadow: 0 0 1px 2px rgba(2, 246, 30, 0.897); /* Sombras */
+  border: 0;
+}
+
+
+.cards-container{
+  display: flex;
+  width: 100%;
+  height: 100px;
+  gap: 20px;
+  padding-bottom: 20px;
+}
+
+.cards-container .card{
+  flex: 1;
+  box-sizing: border-box;
+  border: 1px solid black;
+  border-radius: 20px;
+  text-align: center;
+  padding: 20px;
+}
+
+.cards-container .card.income{
+  color: #058784;
+}
+
+.cards-container .card.expense{
+  color: #ec1111;
+}
+
+.cards-container .card.balance{
+  color: #03c80a;
+}
+
+.card-description{
+  padding-top: 50px;
+}
+
+.card-value{
+  font-size: 40px;
+  font-weight: bold;
+}
+
+/* SELECT DATES */
+.date-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.input-container {
+  border: 1px solid #000;
+  border-radius: 5px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-container input[type="date"] {
+  width: 250px;
+  border: none;
+  border-radius: 5px;
+  padding: 20px 10px 10px 10px;
+  font-size: 18px;
+  box-sizing: border-box;
+}
+
+.input-container label {
+  position: absolute;
+  top: 3px;
+  left: 10px;
+  color: gray;
+  font-size: 16px;
+  pointer-events: none;
+  transition: 0.2s ease all;
+}
+
+.input-container input[type="date"]:focus + label,
+.input-container input[type="date"]:not(:placeholder-shown) + label {
+  top: 5px;
+  left: 10px;
+  font-size: 12px;
+  color: #000;
+}
+
+
+
+.container label {
+    margin-top: 15px;
+}
+
+.container label.switch{
+    margin-top: 0px;
+}
+
+.container input[type=text]{
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.container button {
+    margin-top: 20px; /* Espacio adicional para separar los botones */
+    padding: 10px;
+    font-size: 16px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.container button.cancel{
+    background-color: #dd0a0a;
+    margin-top: 5px;
+}
+
+.container button:hover {
+    background-color: #0056b3;
+}
+
+.container button.cancel:hover {
+    background-color: #b00000;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+  }
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+.slider{
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ec1111;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 17px;
+    width: 17px;
+    left: 4px;
+    top: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 50%;
+  }
+
+  input:checked + .slider {
+    background-color: #1ccc05;
+  }
+  
+  input:focus + .slider {
+    box-shadow: 0 0 1px #1ccc05;
+  }
+
+  input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+  
