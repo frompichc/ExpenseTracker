@@ -46,7 +46,7 @@
         
         <dialog id="input-dialog">
             <form class="container">
-                <label for="container-income-form">Income?</label>
+                <label for="container-income-form" id="title-form"></label>
                 <label class="switch" id="container-income-form">
                     <input type="checkbox" id="income-form">
                     <span class="slider" id="slider-income-form"></span>
@@ -62,7 +62,7 @@
                 <input type="text" id="description-form"/>
 
                 <label for="amount-form">Enter amount:</label>
-                <input type="text" id="amount-form"/>               
+                <input type="text" id="amount-form" data-type="currency"/>               
 
                 <button type="button" id="confirm-form-button" class="confirm">Save</button>
                 <button type="button" id="cancel-form-button" class="cancel">Cancel</button>

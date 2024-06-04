@@ -22,6 +22,8 @@ const txtDescriptionForm = document.getElementById(`description-form`);
 const txtAmountForm = document.getElementById(`amount-form`);
 const chkIncomeForm = document.getElementById(`income-form`);
 const sliderIncomeForm = document.getElementById(`slider-income-form`);
+const lblTitleForm = document.getElementById(`title-form`);
+const inputForm = document.getElementById(`input-dialog`);
 
 //Buttons
 const btnAddExpense = document.getElementById(`add-expense-button`);
@@ -40,7 +42,6 @@ const spanValBalance = document.getElementById(`val-balance`);
 const firstDate = document.getElementById(`start-day`);
 const lastDate = document.getElementById(`end-day`);
 
-
 let idGlobal;
 let dateToday = new Date();
 dateToday.setDate(1);
@@ -56,6 +57,7 @@ lastDate.value = dateToday.getFullYear() + `-`
 //Buttons actions
 btnAddExpense.addEventListener(`click`, () => {
     fetchAllCategories('expense');
+    lblTitleForm.innerText = `EXPENSE`;
     btnConfirmForm.innerHTML = `Add expense`;
     clearForm();
     dialogExpense.showModal();
@@ -73,11 +75,17 @@ chkIncomeForm.addEventListener(`click`, () => {
 function checkIncomeExpense() {
     if (chkIncomeForm.checked) {
         fetchAllCategories('income');
+        lblTitleForm.innerText = `INCOME`;
+        lblTitleForm.style.color = `#058784`;
+        inputForm.style.boxShadow = `0 0 10px 1px #058784`;
         if (btnConfirmForm.innerText === `Add expense`) {
             btnConfirmForm.innerText = `Add income`;
         }
     } else {
         fetchAllCategories('expense');
+        lblTitleForm.innerText = `EXPENSE`;
+        lblTitleForm.style.color = `#EC1111`;
+        inputForm.style.boxShadow = `0px 0px 10px 1px #EC1111`;
         if (btnConfirmForm.innerText === `Add income`) {
             btnConfirmForm.innerText = `Add expense`;
         }
@@ -99,11 +107,12 @@ btnConfirmForm.addEventListener(`click`, () => {
     }
 })
 
-//Form functiosn
+//Form functions
 function clearForm() {
     txtCategoryForm.value = ``;
     txtDescriptionForm.value = ``
-    txtAmountForm.value = ``
+    txtAmountForm.value = formatCurrency(0/100);
+
     chkIncomeForm.checked = false;
     checkIncomeExpense();
 }
@@ -120,11 +129,14 @@ function addExpense() {
     const milisecondsNow = fullDate.getMilliseconds().toString().padStart(2, `0`);
     const dateYearMonth = yearNow + monthNow;
     const dateTimeNow = yearNow + monthNow + dayNow + hourNow + minutesNow + secondsNow + milisecondsNow;
+    let value = txtAmountForm.value;
+    value = value.replace(/[^\d]/g, '');
+    console.info(value);
     set(ref(db, `ExpenseSet/` + dateYearMonth + "/" + dateTimeNow), {
             id: dateTimeNow,
             category: txtCategoryForm.value,
             description: txtDescriptionForm.value,
-            amount: parseFloat(txtAmountForm.value),
+            amount: parseFloat(value/100),
             income: chkIncomeForm.checked
     }).then(() => {
         fetchAllExpenses();
@@ -138,7 +150,8 @@ function addExpense() {
 //Retrieve all categories
 function fetchAllCategories(loadDefault) {
     const dbRef = ref(db);
-    get(child(dbRef, 'CategorySet/' + loadDefault + '/')).then((snapshot) => {
+    get(child(dbRef, 'CategorySet/' + loadDefault + '/'))
+    .then((snapshot) => {
         if (snapshot.exists()){
             fillSelect(snapshot.val());
         } else {
@@ -151,6 +164,7 @@ function fetchAllCategories(loadDefault) {
 
 //Retrieve all expenses
 function fetchAllExpenses() {
+    console.info(parseInt(firstDate.value))
     const dbRef = ref(db);
     get(child(dbRef, 'ExpenseSet/'))
     .then((snapshot) => {
@@ -164,6 +178,7 @@ function fetchAllExpenses() {
     })
 }
 
+//Show form for update or delete
 function showSingleExpense(infoExpenses, action) {
     chkIncomeForm.checked = infoExpenses.income;
     txtDescriptionForm.value = infoExpenses.description;
@@ -196,7 +211,7 @@ function updateExpense() {
     }))
 }
 
-
+//Delete expenses
 function deleteExpense() {
     remove(ref(db, `ExpenseSet/` + idGlobal.substring(0,6) + '/' + idGlobal))
     .then(() => {
@@ -208,8 +223,6 @@ function deleteExpense() {
     })
 }
 
-
-    
 //fill select
 function fillSelect(data) {
     const selectCategory = document.getElementById(`category-form`);
@@ -247,6 +260,7 @@ function fillTable(data) {
             cellCategory.textContent = infoExpenses.category;
             cellDescription.textContent = infoExpenses.description;
             cellAmount.textContent = formatCurrency(parseFloat(infoExpenses.amount));
+            cellAmount.style.textAlign = `right`;
 
             if (infoExpenses.income) {
                 valIncome += parseFloat(infoExpenses.amount);
@@ -277,12 +291,30 @@ function fillTable(data) {
     spanValBalance.innerText = formatCurrency(valBalance);
 }
 
+//Format numbers to currency
 function formatCurrency(valInput) {
     let currencyFormat = valInput.toLocaleString(`en-US`, {
         style: `currency`,
         currency: `USD`
     });
     return currencyFormat;
+}
+
+//Avoid enter letter in amount input
+txtAmountForm.oninput = function(e) {
+    let value = txtAmountForm.value;
+    value = value.replace(/[^\d]/g, '');
+    txtAmountForm.value = value;
+ 
+    if (value) {
+        txtAmountForm.value = formatCurrency(parseFloat(value/100));
+    } else {
+        txtAmountForm.value = '';
+       }
+}
+ 
+txtAmountForm.onpaste = function(e) {
+    e.preventDefault();
 }
 
 window.onload = fetchAllExpenses;

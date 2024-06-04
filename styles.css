@@ -5,6 +5,12 @@
     gap: 1px;
 }
 
+#input-dialog{
+  border-radius: 20px;
+  border: none;
+}
+
+
 /* ADD BUTTON */
 #add-expense-button{
   position: relative;
@@ -179,11 +185,11 @@
   }
 
   input:checked + .slider {
-    background-color: #1ccc05;
+    background-color: #058784;
   }
   
   input:focus + .slider {
-    box-shadow: 0 0 1px #1ccc05;
+    box-shadow: 0 0 1px #058784;
   }
 
   input:checked + .slider:before {
