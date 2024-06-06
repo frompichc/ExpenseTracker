@@ -30,33 +30,36 @@
             </div>
         </div>
         <div>
-            <button id="add-expense-button">Add</button>
+           
             <table id="table-show-expenses">
                 <thead>
                     <th>Date</th>
                     <th>Category</th>
                     <th>Description</th>
                     <th>Amount</th>
-                    <th></th>
-                    <th></th>
+                    <th colspan="2">    
+                        <div id="add-expense-button" class="add-button">
+                            <span class="text">Add</span>
+                            <span class="icon"><img src="./resources/add_icon.svg"/></span>
+                        </div>
+                    </th>
                 </thead>
                 <tbody></tbody>
             </table>
         </div>
         
-        <dialog id="input-dialog">
+        <dialog id="input-dialog" class="form-expense">
             <form class="container">
-                <label for="container-income-form" id="title-form"></label>
-                <label class="switch" id="container-income-form">
-                    <input type="checkbox" id="income-form">
-                    <span class="slider" id="slider-income-form"></span>
+                <label for="container-income-form" id="title-form" class="title-form"></label>
+                <label class="container-toggle-button">
+                    <label class="switch" id="container-income-form">
+                        <input type="checkbox" id="income-form">
+                        <span class="slider" id="slider-income-form"></span>
+                    </label>
                 </label>
 
                 <label for="category-form">Category:</label>
-                <select id="category-form">
-                   
-                </select>
-
+                <select id="category-form-select"></select>
 
                 <label for="description-form">Description:</label>
                 <input type="text" id="description-form"/>
@@ -68,6 +71,9 @@
                 <button type="button" id="cancel-form-button" class="cancel">Cancel</button>
             </form>
         </dialog>
+
+
+        
 
         <script type="module" src="script.js"></script>
     </body>

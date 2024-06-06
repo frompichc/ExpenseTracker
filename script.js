@@ -13,11 +13,14 @@ const app = initializeApp(firebaseConfig);
 //const analytics = getAnalytics(app);
 
 // Initizlize Firebase Database
-import { getDatabase, ref, child, get, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+import { getDatabase, orderByChild, orderByKey, startAt, endAt, query, ref, child, get, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+
+
+
 const db = getDatabase();
 
 //Inputs
-const txtCategoryForm = document.getElementById(`category-form`);
+const selectCategoryForm = document.getElementById(`category-form-select`);
 const txtDescriptionForm = document.getElementById(`description-form`);
 const txtAmountForm = document.getElementById(`amount-form`);
 const chkIncomeForm = document.getElementById(`income-form`);
@@ -42,24 +45,40 @@ const spanValBalance = document.getElementById(`val-balance`);
 const firstDate = document.getElementById(`start-day`);
 const lastDate = document.getElementById(`end-day`);
 
+//Table objects
+const tbody = document.getElementById(`table-show-expenses`).getElementsByTagName(`tbody`)[0];
+
 let idGlobal;
+let cursorPosition = 0;
 let dateToday = new Date();
 dateToday.setDate(1);
 firstDate.value = dateToday.getFullYear() + '-'
     + (dateToday.getMonth()+1).toString().padStart(2, `0`) + '-' 
     + dateToday.getDate().toString().padStart(2,`0`);
 
+
 dateToday.setMonth(dateToday.getMonth() + 1);
 dateToday.setDate(0);
 lastDate.value = dateToday.getFullYear() + `-`
     + (dateToday.getMonth()+1).toString().padStart(2, `0`) + `-`
     + dateToday.getDate().toString().padStart(2, `0`);
+
+//Date objects -- change value
+firstDate.addEventListener('change', () => {
+    fetchAllExpenses();
+});
+
+lastDate.addEventListener('change', () => {
+    fetchAllExpenses();
+})
+
 //Buttons actions
 btnAddExpense.addEventListener(`click`, () => {
     fetchAllCategories('expense');
     lblTitleForm.innerText = `EXPENSE`;
     btnConfirmForm.innerHTML = `Add expense`;
     clearForm();
+    chkInputs(`Insert`);
     dialogExpense.showModal();
 })
 
@@ -109,7 +128,6 @@ btnConfirmForm.addEventListener(`click`, () => {
 
 //Form functions
 function clearForm() {
-    txtCategoryForm.value = ``;
     txtDescriptionForm.value = ``
     txtAmountForm.value = formatCurrency(0/100);
 
@@ -127,17 +145,17 @@ function addExpense() {
     const minutesNow = fullDate.getMinutes().toString().padStart(2, `0`);
     const secondsNow = fullDate.getSeconds().toString().padStart(2, `0`);
     const milisecondsNow = fullDate.getMilliseconds().toString().padStart(2, `0`);
-    const dateYearMonth = yearNow + monthNow;
+    const dateYearMonthDay = yearNow + monthNow + dayNow;
     const dateTimeNow = yearNow + monthNow + dayNow + hourNow + minutesNow + secondsNow + milisecondsNow;
     let value = txtAmountForm.value;
     value = value.replace(/[^\d]/g, '');
-    console.info(value);
-    set(ref(db, `ExpenseSet/` + dateYearMonth + "/" + dateTimeNow), {
-            id: dateTimeNow,
-            category: txtCategoryForm.value,
+    set(ref(db, `ExpenseSet/` + parseInt(dateYearMonthDay) + '/' + parseInt(dateTimeNow)), {
+            id: parseInt(dateTimeNow),
+            category: selectCategoryForm.value,
             description: txtDescriptionForm.value,
             amount: parseFloat(value/100),
-            income: chkIncomeForm.checked
+            income: chkIncomeForm.checked,
+            date: parseInt(dateYearMonthDay)
     }).then(() => {
         fetchAllExpenses();
         dialogExpense.close();
@@ -164,17 +182,26 @@ function fetchAllCategories(loadDefault) {
 
 //Retrieve all expenses
 function fetchAllExpenses() {
-    console.info(parseInt(firstDate.value))
+    const dateStart = firstDate.value.substring(0,4) + firstDate.value.substring(5,7) + firstDate.value.substring(8,10);
+    const dateEnd = lastDate.value.substring(0,4) + lastDate.value.substring(5,7) + lastDate.value.substring(8,10);
     const dbRef = ref(db);
-    get(child(dbRef, 'ExpenseSet/'))
+    //get(child(dbRef, 'ExpenseSet/'))
+    const expenseSetRef = child(dbRef,`ExpenseSet/`);
+    const expenseQuery = query(expenseSetRef, orderByKey(), startAt(dateStart), endAt(dateEnd));
+    get(expenseQuery)
+    //get(expenseQuery)
     .then((snapshot) => {
         if (snapshot.exists()){
             fillTable(snapshot.val())
         } else {
+            tbody.innerHTML = ``;
+            spanValIncome.innerText = formatCurrency(0);
+            spanValExpenses.innerText = formatCurrency(0);
+            spanValBalance.innerText = formatCurrency(0);
             alert(`No data available`);
         }
     }).catch((error) => {
-        alert(`Error retriving data ${error}`);
+        alert(`Error retriving data in fetchAllExpenses ${error}`);
     })
 }
 
@@ -182,25 +209,37 @@ function fetchAllExpenses() {
 function showSingleExpense(infoExpenses, action) {
     chkIncomeForm.checked = infoExpenses.income;
     txtDescriptionForm.value = infoExpenses.description;
-    txtAmountForm.value = infoExpenses.amount;
+    txtAmountForm.value = formatCurrency(infoExpenses.amount);
     btnConfirmForm.innerText= action;
-    idGlobal = infoExpenses.id;
+    idGlobal = infoExpenses.id.toString();
     checkIncomeExpense();
-    if (action===`Delete`) {
-        chkIncomeForm.setAttribute(`readonly`, true);
-        txtAmountForm.setAttribute(`readonly`, true);
-        txtDescriptionForm.setAttribute(`readonly`, true);
-    }
+    chkInputs(action);
     dialogExpense.showModal();
+}
+
+function chkInputs(action) {
+    if (action===`Delete`) {
+        chkIncomeForm.disabled = true;
+        txtAmountForm.disabled = true;
+        txtDescriptionForm.disabled = true;
+        selectCategoryForm.disabled = true;
+    } else {
+        chkIncomeForm.disabled = false;
+        txtAmountForm.disabled = false;
+        txtDescriptionForm.disabled = false;
+        selectCategoryForm.disabled = false;
+    }
 }
 
 //Update expenses 
 function updateExpense() {
-    console.log(idGlobal.substring(0,6), idGlobal);
-    update(ref(db,`ExpenseSet/` + idGlobal.substring(0,6) +'/'+ idGlobal), {
-        category: txtCategoryForm.value,
+    let value = txtAmountForm.value;
+    value = value.replace(/[^\d]/g, '');
+    update(ref(db,`ExpenseSet/` + parseInt(idGlobal.substring(0,8)) +'/'+ parseInt(idGlobal)), {
+        category: selectCategoryForm.value,
         description: txtDescriptionForm.value,
-        amount: parseFloat(txtAmountForm.value),
+        amount: parseFloat(value/100),
+        id: idGlobal,
         income: chkIncomeForm.checked
     }).then(() => {
         fetchAllExpenses();
@@ -213,7 +252,7 @@ function updateExpense() {
 
 //Delete expenses
 function deleteExpense() {
-    remove(ref(db, `ExpenseSet/` + idGlobal.substring(0,6) + '/' + idGlobal))
+    remove(ref(db, `ExpenseSet/` + parseInt(idGlobal.substring(0,8)) + '/' + parseInt(idGlobal)))
     .then(() => {
         alert(`Data deleted successfully`);
         dialogExpense.close();
@@ -225,14 +264,14 @@ function deleteExpense() {
 
 //fill select
 function fillSelect(data) {
-    const selectCategory = document.getElementById(`category-form`);
-    selectCategory.innerHTML = ``;
+    
+    selectCategoryForm.innerHTML = ``;
     for (const key in data) {
         const infoCategory = data[key];
         const optionCategory = document.createElement(`option`);
         optionCategory.value = infoCategory;
         optionCategory.innerText = infoCategory;
-        selectCategory.appendChild(optionCategory);
+        selectCategoryForm.appendChild(optionCategory);
     }
 }
 
@@ -242,9 +281,11 @@ function fillTable(data) {
     let valIncome = 0;
     let valExpenses = 0;
     let valBalance = 0;
-    const tbody = document.getElementById(`table-show-expenses`).getElementsByTagName(`tbody`)[0];
+ 
     tbody.innerHTML = ``;
+   
     for (const dateKey in data) {
+       
         const dateInfo = data[dateKey];
         for (const idKey in dateInfo){
             const infoExpenses = dateInfo[idKey];
@@ -256,7 +297,7 @@ function fillTable(data) {
             const cellEditButton = row.insertCell(4);
             const cellDeleteButton = row.insertCell(5);
 
-            cellDate.textContent = infoExpenses.id.substring(4,6) + "/" + infoExpenses.id.substring(6,8);
+            cellDate.textContent = infoExpenses.id.toString().substring(4,6) + "/" + infoExpenses.id.toString().substring(6,8);
             cellCategory.textContent = infoExpenses.category;
             cellDescription.textContent = infoExpenses.description;
             cellAmount.textContent = formatCurrency(parseFloat(infoExpenses.amount));
@@ -269,18 +310,30 @@ function fillTable(data) {
             }
 
             const btnUpdateExpense = document.createElement(`button`);
-            btnUpdateExpense.textContent = `Update`;
+            btnUpdateExpense.className = `table-button update`;
             cellEditButton.appendChild(btnUpdateExpense);
             btnUpdateExpense.addEventListener(`click`, () => {
                 showSingleExpense(infoExpenses, `Update`);
             })
 
+
+            const spanUpdateIcon = document.createElement(`span`);
+            spanUpdateIcon.className = `icon`;
+            spanUpdateIcon.innerHTML = `<image src="./resources/update_icon.svg" />`;
+            btnUpdateExpense.appendChild(spanUpdateIcon);
+
+
             const btnDeleteExpense = document.createElement(`button`);
-            btnDeleteExpense.textContent = `Delete`;
+            btnDeleteExpense.className = `table-button delete`;
             cellDeleteButton.appendChild(btnDeleteExpense);
             btnDeleteExpense.addEventListener(`click`, () => {
                 showSingleExpense(infoExpenses, `Delete`);
             })
+
+            const spanDeleteIcon = document.createElement(`span`);
+            spanDeleteIcon.className = `icon`;
+            spanDeleteIcon.innerHTML = `<image src="./resources/delete_icon.svg" />`;
+            btnDeleteExpense.appendChild(spanDeleteIcon);
 
         }
     }
@@ -302,7 +355,9 @@ function formatCurrency(valInput) {
 
 //Avoid enter letter in amount input
 txtAmountForm.oninput = function(e) {
+    cursorPosition = txtAmountForm.selectionStart;
     let value = txtAmountForm.value;
+    const newCursorPosition = cursorPosition - (txtAmountForm.value.length - value.length);
     value = value.replace(/[^\d]/g, '');
     txtAmountForm.value = value;
  
@@ -310,7 +365,8 @@ txtAmountForm.oninput = function(e) {
         txtAmountForm.value = formatCurrency(parseFloat(value/100));
     } else {
         txtAmountForm.value = '';
-       }
+    }
+    txtAmountForm.setSelectionRange(newCursorPosition, newCursorPosition);
 }
  
 txtAmountForm.onpaste = function(e) {
